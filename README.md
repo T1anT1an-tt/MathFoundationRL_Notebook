@@ -3,7 +3,7 @@
 这个仓库记录我学习《Mathematical Foundation of Reinforcement Learning》过程中的中文笔记。
 
 **连载中，笔者还在学习。**  
-目前笔记覆盖 Chapter 1-7，后续章节会继续补充、修正和重写。这个仓库更像一份持续生长的学习地图，而不是一次性完成的教材。
+目前笔记覆盖 Chapter 1-7、Chapter 9-10，后续章节会继续补充、修正和重写。这个仓库更像一份持续生长的学习地图，而不是一次性完成的教材。
 
 ## 协作说明
 
@@ -35,7 +35,9 @@
 | Chapter 5 | Monte Carlo Methods | 已整理 |
 | Chapter 6 | Stochastic Approximation | 已整理 |
 | Chapter 7 | Temporal-Difference Methods | 已整理 |
-| Chapter 8-10 | 后续章节 | 学习中 |
+| Chapter 8 | Value Function Methods | 待同步 |
+| Chapter 9 | Policy Gradient Methods | 已整理 |
+| Chapter 10 | Actor-Critic Methods | 已整理 |
 
 ## 笔记目录
 
@@ -48,6 +50,8 @@
 - [Chapter 5 Monte Carlo Methods 学习笔记](./notes/Chapter%205%20Monte%20Carlo%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 6 Stochastic Approximation 学习笔记](./notes/Chapter%206%20Stochastic%20Approximation%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 7 Temporal-Difference Methods 学习笔记](./notes/Chapter%207%20Temporal-Difference%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
+- [Chapter 9 Policy Gradient Methods 学习笔记](./notes/Chapter%209%20Policy%20Gradient%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
+- [Chapter 10 Actor-Critic Methods 学习笔记](./notes/Chapter%2010%20Actor-Critic%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 
 ## 适合谁看
 
@@ -76,14 +80,15 @@
 建议按顺序阅读：
 
 ```text
-Chapter 1 -> Chapter 2 -> Chapter 3 -> Chapter 4 -> Chapter 5 -> Chapter 6 -> Chapter 7
+Chapter 1 -> Chapter 2 -> Chapter 3 -> Chapter 4 -> Chapter 5 -> Chapter 6 -> Chapter 7 -> Chapter 9 -> Chapter 10
 ```
 
 其中：
 
 - Chapter 1-2 建立 MDP、return、state value、Bellman equation；
 - Chapter 3-4 进入最优价值、最优策略和动态规划算法；
-- Chapter 5-7 从 model-based 过渡到 model-free，包括 Monte Carlo、随机逼近和 TD learning。
+- Chapter 5-7 从 model-based 过渡到 model-free，包括 Monte Carlo、随机逼近和 TD learning；
+- Chapter 9-10 进入 policy gradient 和 actor-critic 方法。
 
 如果只想先理解 Bellman 相关内容，可以重点看 Chapter 2-4。
 
