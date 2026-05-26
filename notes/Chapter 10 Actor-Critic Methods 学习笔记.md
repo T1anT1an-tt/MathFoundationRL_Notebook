@@ -583,6 +583,89 @@ A2C 的几个特点：
 - 它比 REINFORCE 方差更低，但由于 bootstrap，可能引入 bias。
 - 它仍然使用 stochastic policy，所以通常不需要 $\epsilon$-greedy。
 
+### 5.1 critic 更新如何作用到 actor
+
+这里最容易误解的一点是：critic 的参数 $w$ 和 actor 的参数 $\theta$ 确实是两组不同参数。
+
+- $w$ 是 value function 的参数，控制 $v(s,w)$ 的输出。
+- $\theta$ 是 policy function 的参数，控制 $\pi(a|s,\theta)$ 的动作概率。
+
+所以 critic 更新不是直接去改 $\theta$。它的作用路径是：
+
+$$
+w
+\to
+v(s,w)
+\to
+\delta_t
+\to
+\theta \text{ 的更新幅度和方向}
+$$
+
+具体看 A2C 的 TD error：
+
+$$
+\delta_t
+=
+r_{t+1}
++
+\gamma v(s_{t+1},w_t)
+-
+v(s_t,w_t)
+$$
+
+这里的 $\delta_t$ 是由 critic 当前的 value estimate 算出来的。然后 actor 使用同一个 $\delta_t$ 更新策略：
+
+$$
+\theta_{t+1}
+=
+\theta_t
++
+\alpha_{\theta}
+\delta_t
+\nabla_{\theta}\ln\pi(a_t|s_t,\theta_t)
+$$
+
+因此 critic 对 actor 的影响不是：
+
+$$
+w \text{ 直接改 } \theta
+$$
+
+而是：
+
+$$
+w \text{ 决定 } v(s,w)
+\quad
+\Rightarrow
+\quad
+\delta_t \text{ 判断动作好坏}
+\quad
+\Rightarrow
+\quad
+\theta \text{ 增加或降低该动作概率}
+$$
+
+如果：
+
+$$
+\delta_t>0
+$$
+
+说明这次动作带来的结果比 critic 原来预计的更好，actor 就沿着 $\nabla_{\theta}\ln\pi(a_t|s_t,\theta_t)$ 的方向增加这个动作的概率。
+
+如果：
+
+$$
+\delta_t<0
+$$
+
+说明这次动作带来的结果比 critic 原来预计的更差，actor 更新方向会反过来，降低这个动作的概率。
+
+所以可以把 A2C 理解成：
+
+> critic 负责给动作打分，actor 根据这个分数调整策略；critic 的参数 $w$ 不直接等于策略参数，但它通过 TD error 影响 actor 的每一步更新。
+
 ## 6. QAC 和 A2C 的对比
 
 | 问题 | QAC | A2C |
@@ -1314,6 +1397,60 @@ a=\mu(s,\theta)
 $$
 
 给定 state 后没有 action distribution 的期望，actor update 直接沿着 $q(s,a)$ 对 action 的梯度走。因此 DPG 更自然地和 off-policy 结合。
+
+但这句话不能理解成：
+
+> 只要一个方法不涉及 action distribution，就一定可以随便 off-policy。
+
+更准确地说，它解决的是 actor update 里最直接的一层分布不匹配。
+
+随机策略的 actor update 依赖：
+
+$$
+A\sim\pi(\cdot|S,\theta)
+$$
+
+如果实际样本动作来自 behavior policy：
+
+$$
+A\sim\beta(\cdot|S)
+$$
+
+就必须用 importance sampling 修正：
+
+$$
+\frac{\pi(A|S,\theta)}{\beta(A|S)}
+$$
+
+否则用 $\beta$ 的动作样本直接估计 $\pi$ 的 policy gradient，会估计错。
+
+DPG 中 actor update 不再对 $A\sim\pi$ 取期望，而是直接使用：
+
+$$
+a=\mu(s,\theta)
+$$
+
+并计算：
+
+$$
+\nabla_{\theta}\mu(s,\theta)
+\left.
+\nabla_a q(s,a,w)
+\right|_{a=\mu(s,\theta)}
+$$
+
+所以 actor 这一步不需要“样本动作 $a_t$ 必须来自当前 target policy”。即使经验中的 $a_t$ 是 behavior policy 产生的，actor 更新时也可以在同一个 state $s_t$ 上把动作换成当前 target action $\mu(s_t,\theta)$，再看 critic 的 $q$ 对 action 的梯度。
+
+不过 off-policy 仍然有条件：
+
+- behavior policy 需要访问到 target policy 关心的 states；
+- critic 需要学到足够可靠的 $q(s,a,w)$，尤其是 $\mu(s,\theta)$ 附近的 action value；
+- 如果 behavior data 完全没有覆盖 $\mu(s,\theta)$ 附近的动作，critic 对这些动作的估计会很不可靠；
+- 因此 DPG 常用 $\mu(s,\theta)+\text{noise}$ 作为 behavior policy，让数据围绕 target policy 附近探索。
+
+所以这句话最稳妥的理解是：
+
+> DPG 的 actor gradient 不需要对 stochastic action distribution 做采样期望，因此少了一层 action-level importance sampling；这使它更适合 off-policy，但仍然依赖 state/action coverage 和 critic 的 off-policy 估计质量。
 
 ## 15. 本章公式总表
 
