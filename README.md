@@ -3,7 +3,7 @@
 这个仓库记录我学习《Mathematical Foundation of Reinforcement Learning》过程中的中文笔记。
 
 **连载中，笔者还在学习。**  
-目前笔记覆盖 Chapter 1-7、Chapter 9-10，后续章节会继续补充、修正和重写。这个仓库更像一份持续生长的学习地图，而不是一次性完成的教材。
+目前笔记覆盖 Chapter 1-10，并补充了 Chapter 5-10 的算法更新规则对照表。后续章节会继续补充、修正和重写。这个仓库更像一份持续生长的学习地图，而不是一次性完成的教材。
 
 ## 协作说明
 
@@ -21,6 +21,7 @@
 - Bellman optimality equation 和普通 Bellman equation 有什么关系；
 - value iteration、policy iteration 为什么能找到最优策略；
 - Monte Carlo、stochastic approximation、TD learning 之间如何衔接。
+- value-function approximation、policy gradient、actor-critic 分别在解决什么问题。
 
 我把每章学习时真正需要理解的逻辑、公式、直觉和易错点整理成中文笔记。目标不是逐字翻译原书，而是把“读懂这一章需要抓住什么”写清楚。
 
@@ -35,9 +36,10 @@
 | Chapter 5 | Monte Carlo Methods | 已整理 |
 | Chapter 6 | Stochastic Approximation | 已整理 |
 | Chapter 7 | Temporal-Difference Methods | 已整理 |
-| Chapter 8 | Value Function Methods | 待同步 |
+| Chapter 8 | Value Function Methods | 已整理 |
 | Chapter 9 | Policy Gradient Methods | 已整理 |
 | Chapter 10 | Actor-Critic Methods | 已整理 |
+| Chapter 5-10 | 算法更新规则对照表 | 已整理 |
 
 ## 笔记目录
 
@@ -50,8 +52,10 @@
 - [Chapter 5 Monte Carlo Methods 学习笔记](./notes/Chapter%205%20Monte%20Carlo%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 6 Stochastic Approximation 学习笔记](./notes/Chapter%206%20Stochastic%20Approximation%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 7 Temporal-Difference Methods 学习笔记](./notes/Chapter%207%20Temporal-Difference%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
+- [Chapter 8 Value Function Methods 学习笔记](./notes/Chapter%208%20Value%20Function%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 9 Policy Gradient Methods 学习笔记](./notes/Chapter%209%20Policy%20Gradient%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
 - [Chapter 10 Actor-Critic Methods 学习笔记](./notes/Chapter%2010%20Actor-Critic%20Methods%20%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)
+- [Chapter 5-10 算法更新规则对照表](./notes/Chapter%205-10%20%E7%AE%97%E6%B3%95%E6%9B%B4%E6%96%B0%E8%A7%84%E5%88%99%E5%AF%B9%E7%85%A7%E8%A1%A8.md)
 
 ## 适合谁看
 
@@ -80,7 +84,7 @@
 建议按顺序阅读：
 
 ```text
-Chapter 1 -> Chapter 2 -> Chapter 3 -> Chapter 4 -> Chapter 5 -> Chapter 6 -> Chapter 7 -> Chapter 9 -> Chapter 10
+Chapter 1 -> Chapter 2 -> Chapter 3 -> Chapter 4 -> Chapter 5 -> Chapter 6 -> Chapter 7 -> Chapter 8 -> Chapter 9 -> Chapter 10
 ```
 
 其中：
@@ -88,7 +92,9 @@ Chapter 1 -> Chapter 2 -> Chapter 3 -> Chapter 4 -> Chapter 5 -> Chapter 6 -> Ch
 - Chapter 1-2 建立 MDP、return、state value、Bellman equation；
 - Chapter 3-4 进入最优价值、最优策略和动态规划算法；
 - Chapter 5-7 从 model-based 过渡到 model-free，包括 Monte Carlo、随机逼近和 TD learning；
-- Chapter 9-10 进入 policy gradient 和 actor-critic 方法。
+- Chapter 8 从表格型价值函数过渡到函数近似；
+- Chapter 9-10 进入 policy gradient 和 actor-critic 方法；
+- Chapter 5-10 对照表适合在复习算法更新式时快速横向比较。
 
 如果只想先理解 Bellman 相关内容，可以重点看 Chapter 2-4。
 
