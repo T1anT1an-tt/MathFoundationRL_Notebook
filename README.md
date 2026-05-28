@@ -26,7 +26,6 @@
 - Monte Carlo、stochastic approximation、TD learning 之间如何衔接。
 - value-function approximation、policy gradient、actor-critic 分别在解决什么问题。
 
-我把每章学习时真正需要理解的逻辑、公式、直觉和易错点整理成中文笔记。目标不是逐字翻译原书，而是把“读懂这一章需要抓住什么”写清楚。
 
 ## 当前进度
 
