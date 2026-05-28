@@ -5,7 +5,8 @@
 **连载中，笔者还在学习。**  
 目前笔记覆盖 Chapter 1-10，并补充了 Chapter 5-10 的算法更新规则对照表。后续章节会继续补充、修正和重写。这个仓库更像一份持续生长的学习地图，而不是一次性完成的教材。
 
-<img width="1039" height="1002" alt="03084b8d62748943d289c56e6929d3ec" src="https://github.com/user-attachments/assets/455715dd-6783-4d9a-93c0-2af27a803588" />
+<img width="451" height="558" alt="image" src="https://github.com/user-attachments/assets/395f3e26-2c6a-49ca-a2b9-f5c39752beb9" />
+
 
 **最新上新，5-10章思维导图**  
 梳理了从第五章开始到第十章出现的诸多算法和思想，清晰地把握脉络可以更好更快的打牢基础概念！！
