@@ -206,6 +206,50 @@ q_pi(s,a)
 a*_k(s) = argmax_a q_k(s,a)
 ```
 
+### 4.2.1 为什么 Alg 3 的 `V` 评估加上策略改进，不等于 model-free control？
+
+这个问题容易混淆，因为 MC policy evaluation 和 MC policy control 都是 model-free 的，但它们解决的问题不一样。
+
+先看两个算法的输出：
+
+| 算法 | 估计对象 | 直接输出 | 是否需要环境模型 |
+| --- | --- | --- | --- |
+| Algorithm 3: MC policy evaluation | `V_pi(s)` | 给定策略 `pi` 的 state value | 不需要 |
+| Algorithm 4: MC policy control | `Q(s,a)` 和改进后的 `pi` | 近似最优策略 `pi^*` | 不需要 |
+
+关键不是 MC 采样本身是否需要模型，而是后面的 **policy improvement** 用什么信息做决策。
+
+如果只拿到 `V_pi(s)`，要在状态 `s` 比较不同动作，就必须先知道每个动作会把 agent 带到哪里、得到什么奖励：
+
+\[
+\pi'(s) = \arg\max_a \sum_{s'} P(s'|s,a)\big[R(s,a,s') + \gamma V_\pi(s')\big]
+\]
+
+这个改进公式需要环境模型 `P` 和 `R`。也就是说，`V` 只告诉你“到达某个状态以后好不好”，但不告诉你“当前选左转还是右转会到哪个状态、会拿到什么奖励”。所以在未知模型的强化学习问题中，单独的 `V` 评估不能直接完成 control。
+
+如果直接估计 `Q_pi(s,a)`，策略改进就变成：
+
+\[
+\pi'(s) = \arg\max_a Q_\pi(s,a)
+\]
+
+这一步不再需要知道 `P` 和 `R`，因为 `Q_pi(s,a)` 已经把“从状态 `s` 先执行动作 `a`，再按策略继续走”的长期回报打包进一个数里。
+
+所以结论是：
+
+| 场景 | `Alg 3` + policy improvement 能否找到最优策略？ | 原因 |
+| --- | --- | --- |
+| 已知模型的规划问题 | 可以 | 可以用 `P, R, V` 计算每个动作的 one-step lookahead value |
+| 未知模型的强化学习问题 | 不可以直接做到 | 只有 `V` 时无法比较动作，必须改为估计 `Q` |
+
+一个直觉例子：如果你是外卖骑手，`V` 像是“每个路口后续收益的评分”，但你还不知道左转、右转分别会到哪个路口；`Q` 则直接告诉你“在当前路口左转值 10 分、右转值 5 分”。没有地图时，只有 `Q` 才能直接支持选动作。
+
+一句话记忆：
+
+```text
+V 需要世界模型才能做动作决策；Q 已经把动作后果打包好了，所以 model-free control 更适合估计 Q。
+```
+
 ### 4.3 MC Basic 的算法结构
 
 初始化一个策略 `pi_0`。
@@ -729,4 +773,3 @@ Monte Carlo estimation 是用随机样本解决估计问题的一类方法。这
 - epsilon 增大时，exploration 和 exploitation 分别怎样变化？
 - MC epsilon-Greedy 为什么只是在 `Pi_epsilon` 中最优？
 - MC 和 TD 的核心差别是什么？
-

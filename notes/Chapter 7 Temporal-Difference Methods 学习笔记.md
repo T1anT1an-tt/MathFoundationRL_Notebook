@@ -170,6 +170,145 @@ r_{t+1} + gamma v_t(s_{t+1})
 
 这也是 Chapter 6 的 stochastic approximation 为什么重要：它为 TD learning 提供数学解释。
 
+### 2.5.1 为什么可以用 `t+1` 时刻的值更新 `t` 时刻的值？
+
+这个问题是理解 TD learning 和 bootstrap 的核心。可以拆成两个问题：
+
+```text
+为什么能用？因为 Bellman equation 给了递归关系。
+为什么要用？因为这样可以降低方差，并且每走一步就能学习。
+```
+
+#### 为什么能用：Bellman 方程给了数学保证
+
+从 return 的定义开始看：
+
+```text
+G_t = R_{t+1} + gamma G_{t+1}
+```
+
+也就是说，从 `t` 时刻开始的总回报，可以拆成两部分：
+
+- 下一步立刻拿到的奖励 `R_{t+1}`；
+- 从下一状态开始的未来总回报 `G_{t+1}`，再乘折扣因子 `gamma`。
+
+对这个递归关系取期望，就得到 Bellman expectation equation：
+
+```text
+v_pi(s) = E[R_{t+1} + gamma v_pi(S_{t+1}) | S_t = s]
+```
+
+所以 `t` 时刻的状态价值不是孤立的，它本来就由“下一步奖励 + 下一状态价值”递归定义。
+
+因此，用 `t+1` 时刻的价值来更新 `t` 时刻的价值，不是随便找一个未来值来凑公式，而是在利用 MDP 的结构：
+
+```text
+当前状态价值 = 一步奖励 + 折扣后的下一状态价值
+```
+
+一个直觉类比：公司的价值可以理解为“今年利润 + 折现后的明年价值”。明年的价值不是外来的神秘量，而是同一套递归逻辑的一部分。
+
+#### 为什么要用：解决 Monte Carlo 的痛点
+
+Monte Carlo learning 用完整 return 做 target：
+
+```text
+G_t = R_{t+1} + gamma R_{t+2} + gamma^2 R_{t+3} + ...
+```
+
+它的优点是 target 来自真实完整轨迹，但缺点也明显：
+
+| 问题 | 含义 |
+| --- | --- |
+| 方差高 | `G_t` 包含所有未来奖励，未来随机性越多，波动越大 |
+| 必须等 episode 结束 | 没有完整 return 前不能更新 |
+| 学习慢 | 方差大时，需要更多 episode 才能把平均值估准 |
+
+TD learning 改用一步 bootstrap target：
+
+```text
+R_{t+1} + gamma v_t(S_{t+1})
+```
+
+这个 target 只采样一步真实经验，然后把后面的未来交给当前估计 `v_t(S_{t+1})` 处理。
+
+这样做的好处是：
+
+| 优势 | 含义 |
+| --- | --- |
+| 方差较低 | target 只包含一步随机奖励和下一状态，而不是整条未来轨迹 |
+| 可以在线学习 | 每得到一步 `(S_t, R_{t+1}, S_{t+1})` 就能更新 |
+| 学习更高效 | 已经学到的下一状态价值可以立刻向前传播 |
+
+代价是：TD target 可能有 bias。因为 `v_t(S_{t+1})` 只是当前估计，不一定等于真实的 `v_pi(S_{t+1})`。这就是 TD 和 MC 的基本权衡：
+
+```text
+MC：完整回报，偏差小，但方差大、必须等 episode 结束。
+TD：一步奖励 + 当前估计，方差低、能在线更新，但早期可能有 bootstrap bias。
+```
+
+#### Bootstrap 到底是什么意思？
+
+Bootstrap 指的是：**用当前价值函数自己的估计值，来帮助更新这个价值函数本身。**
+
+在 TD state-value learning 中：
+
+```text
+v_t(S_{t+1})
+```
+
+还不是真实值，但算法暂时把它作为下一状态价值的估计，构造 target：
+
+```text
+R_{t+1} + gamma v_t(S_{t+1})
+```
+
+然后用这个 target 修正 `v_t(S_t)`：
+
+```text
+v_{t+1}(S_t)
+= v_t(S_t)
++ alpha_t [R_{t+1} + gamma v_t(S_{t+1}) - v_t(S_t)]
+```
+
+这不是循环论证，而是相互校正的迭代过程。早期每个状态的估计都可能不准，但随着样本增多，终点附近或奖励附近的价值会先变准，再逐步向前传播，最后整个 value function 一起变准。
+
+#### 通勤时间例子
+
+假设你想估计“从家出发到公司的期望通勤时间”。
+
+Monte Carlo 的做法是：
+
+```text
+必须完整到达公司，才知道今天从家到公司的总时间。
+```
+
+如果某天路上堵车很严重，这一天的完整通勤时间会波动很大，所以要很多天才能把平均值估准。
+
+TD 的做法是：
+
+```text
+从家到第一个路口花了 5 分钟；
+当前估计：从第一个路口到公司还要 35 分钟；
+于是从家出发的估计 target = 5 + 35 = 40 分钟。
+```
+
+这里的 `35 分钟` 不一定完全准确，但它会在未来不断被真实路段经验修正。TD 的优势是：不用等完整到达公司，每经过一个路口都可以把“后面路段的当前估计”往前传。
+
+#### 一句话总结
+
+```text
+Bellman equation 给了我们递归的权利；
+bootstrap 让我们用当前估计先搭一个可更新的 target。
+```
+
+更直观地说：
+
+```text
+MC：走到终点后，用完整结果回头更新。
+TD：每走一步，就用下一状态的当前估计边走边修正。
+```
+
 ### 2.6 Robbins-Monro 推导里的两个假设
 
 从 Robbins-Monro 角度推 TD learning 时，书里会先把问题固定在某一个状态 `s` 上。也就是说，此时不是沿着一条真实轨迹看 `S_t`，而是专门讨论怎样估计这个固定状态的价值 `v_pi(s)`。
@@ -323,6 +462,74 @@ new estimate = old estimate + step size * sample error
 
 所以你的说法方向是对的，更严谨的表达是：**TD 公式是在不知道环境模型时，用样本和 Robbins-Monro 随机逼近思想求解 Bellman equation 的更新公式。**
 
+### 2.8 从 Model-Based 到 Model-Free 的跳跃
+
+这里真正的跳跃不是“Bellman equation 变了”，而是“Bellman 右边的期望怎么得到”变了。
+
+在 model-based 方法里，我们知道环境模型，也就是知道转移概率和奖励模型。因此可以直接写出并计算：
+
+```text
+v_pi(s)
+= sum_a pi(a|s) sum_{s',r} p(s',r|s,a) [r + gamma v_pi(s')]
+```
+
+这时算法可以对所有可能的 `a,s',r` 做加权平均，所以 Chapter 4 的 policy evaluation / value iteration 更像是在“用模型算期望”。
+
+到了 model-free，环境模型未知，不能再展开这个求和：
+
+```text
+p(s',r|s,a) unknown
+```
+
+但 agent 还能和环境交互，拿到一条真实样本：
+
+```text
+S_t=s, A_t ~ pi(.|s), R_{t+1}=r, S_{t+1}=s'
+```
+
+于是 TD learning 把“完整期望”换成“一次样本 target”：
+
+```text
+E[R_{t+1} + gamma v_pi(S_{t+1}) | S_t=s]
+=> R_{t+1} + gamma v_t(S_{t+1})
+```
+
+所以从 model-based 到 model-free 的核心变化是：
+
+- model-based：知道 `p(s',r|s,a)`，直接算 Bellman 右边的期望；
+- model-free：不知道 `p(s',r|s,a)`，用真实交互样本近似 Bellman 右边的期望；
+- TD 的额外特点：不等 episode 结束，而是用 `v_t(S_{t+1})` bootstrap 未来价值。
+
+这里还要注意一个边界：TD state-value learning 仍然只是 **policy evaluation**，不是直接做最优控制。因为它更新的是 `v(s)`，而 `v(s)` 只回答一个问题：
+
+> 从状态 `s` 出发，以后按照某个策略 `pi` 行动，长期回报的期望是多少？
+
+它没有记录“在状态 `s` 下选哪个动作更好”。动作选择已经被采样策略 `pi` 吸收进样本里了。也就是说，一步 state-value TD 样本
+
+```text
+(S_t,R_{t+1},S_{t+1})
+```
+
+背后其实已经发生了：
+
+```text
+A_t ~ pi(.|S_t)
+```
+
+但更新式没有保存 `A_t` 对应的动作价值，只更新：
+
+```text
+v_{t+1}(S_t)
+= v_t(S_t)
++ alpha_t [R_{t+1} + gamma v_t(S_{t+1}) - v_t(S_t)]
+```
+
+因此它评估的是“当前这套动作规则 `pi` 产生的状态价值”，不是直接找最优动作。想从“评估给定策略”走到“改进策略”，后面就要学习 action value：
+
+- TD state-value learning：学 `v_pi(s)`，主要是 policy evaluation；
+- Sarsa：学 `q_pi(s,a)`，可以结合 `epsilon-greedy` 做 on-policy control；
+- Q-learning：学 `q_*(s,a)`，直接逼近最优动作价值。
+
 ## 3. TD Learning vs Monte Carlo Learning
 
 | 对比点 | TD learning | Monte Carlo learning |
@@ -467,6 +674,20 @@ q_pi(s,a)
 ```
 
 因为有了 `q(s,a)`，就可以在状态 `s` 下比较不同动作 `a` 的好坏，从而改进策略。
+
+一个小例子：在状态 `s` 有两个动作，`a_L` 的回报通常约为 `+1`，`a_R` 的回报通常约为 `+5`。如果当前策略是：
+
+```text
+pi(a_L|s)=0.8, pi(a_R|s)=0.2
+```
+
+那么 state value 学到的是这个策略混合后的平均效果，例如近似：
+
+```text
+v_pi(s) ≈ 0.8 * 1 + 0.2 * 5 = 1.8
+```
+
+它不会分别告诉你“向左值多少、向右值多少”。Sarsa 维护的是 `q(s,a_L)` 和 `q(s,a_R)`，所以能发现 `q(s,a_R) > q(s,a_L)`，再通过 `epsilon-greedy` 让策略更偏向较好的动作，同时保留少量探索。
 
 ### 5.2 Sarsa 更新公式
 
@@ -1123,6 +1344,7 @@ q_{t+1}(s_t,a_t)
 - 能解释 TD learning 为什么是 model-free。
 - 能写出 TD state-value learning 的更新公式。
 - 能区分 TD target 和 TD error。
+- 能解释为什么可以用 `t+1` 时刻的估计值更新 `t` 时刻的价值，以及这样做的 bias-variance 取舍。
 - 能说明 TD learning 为什么是 stochastic approximation for Bellman equation。
 - 能比较 TD learning 和 MC learning：更新时机、bootstrap、方差、任务类型。
 - 能写出 Sarsa 更新公式，并解释 Sarsa 名字来源。
